@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космо-Школа — Портал Класса</title>
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        :root {
+            --bg: #F4F6FB;
+            --card: #FFFFFF;
+            --primary: #6C5CE7;
+            --secondary: #00B894;
+            --accent: #FF7675;
+            --gold: #FDCB6E;
+            --text: #2D3436;
+            --muted: #636E72;
+            --radius: 22px;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 90px; }
+
+        .app-header {
+            background: linear-gradient(135deg, #6C5CE7 0%, #8E44AD 100%);
+            color: white; padding: 16px 20px 20px; border-radius: 0 0 28px 28px;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25); position: sticky; top: 0; z-index: 100;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 720px; margin: 0 auto; }
+        .brand { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .badge-grade { background: rgba(255,255,255,0.22); padding: 3px 10px; border-radius: 12px; font-size: 0.85rem; }
+        .stars-pill { background: var(--gold); color: #2D3436; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 1rem; }
+
+        .controls-bar { max-width: 720px; margin: 14px auto 0; display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+        .role-switch { display: flex; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 4px; flex: 1; min-width: 210px; }
+        .role-btn { flex: 1; border: none; background: transparent; color: rgba(255,255,255,0.85); padding: 8px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+        .role-btn.active { background: white; color: var(--primary); }
+        
+        .tier-select { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.35); border-radius: 14px; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; outline: none; }
+        .tier-select option { color: var(--text); }
+
+        .main-container { max-width: 720px; margin: 16px auto; padding: 0 16px; }
+
+        .holiday-banner { background: linear-gradient(120deg, #00CEC9, #0984E3); color: white; padding: 14px 18px; border-radius: 18px; margin-bottom: 14px; font-weight: 700; display: none; text-align: center; }
+        .bday-card { background: linear-gradient(120deg, #FF7675, #FDCB6E); color: #2D3436; padding: 18px; border-radius: var(--radius); margin-bottom: 16px; box-shadow: 0 8px 20px rgba(255, 118, 117, 0.3); display: none; }
+        .bday-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 6px; }
+
+        .card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-size: 1.1rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px; }
+        
+        .tag-free { background: #E3FCEF; color: #00875A; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 10px; }
+        .tag-pro { background: linear-gradient(90deg, #FDCB6E, #E17055); color: white; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 10px; }
+
+        .pro-lock-overlay { background: #FFFDF7; border: 2px dashed var(--gold); border-radius: 16px; padding: 18px; text-align: center; margin-top: 10px; }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 16px; font-size: 1rem; font-weight: 700; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-green { background: var(--secondary); color: white; }
+        .btn-gold { background: linear-gradient(90deg, #FDCB6E, #E17055); color: white; }
+        .btn-outline { background: #F0F2F8; color: var(--text); }
+
+        input, textarea { width: 100%; padding: 12px 14px; border: 2px solid #E2E8F0; border-radius: 14px; font-size: 1rem; margin-top: 8px; margin-bottom: 10px; outline: none; }
+        input:focus, textarea:focus { border-color: var(--primary); }
+
+        .ai-box { background: #F3F0FF; border-left: 4px solid var(--primary); padding: 14px; border-radius: 12px; margin-top: 12px; font-size: 0.95rem; line-height: 1.5; display: none; white-space: pre-line; }
+        .checklist-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F1F5F9; font-size: 0.98rem; }
+        .checklist-item input[type="checkbox"] { width: 22px; height: 22px; margin: 0; accent-color: var(--secondary); }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 72px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); border-radius: 22px 22px 0 0; z-index: 100; }
+        .nav-tab { background: none; border: none; color: var(--muted); font-size: 0.78rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .nav-tab.active { color: var(--primary); }
+        .nav-tab span.ico { font-size: 1.4rem; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; justify-content: center; align-items: center; padding: 16px; }
+        .modal-content { background: white; border-radius: 26px; padding: 24px; max-width: 420px; width: 100%; text-align: center; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <div class="header-top">
+        <div class="brand">🚀 Портал <span class="badge-grade" id="gradeBadge">2 Класс</span></div>
+        <div class="stars-pill">⭐ <span id="starCounter">45</span></div>
+    </div>
+    <div class="controls-bar">
+        <div class="role-switch">
+            <button class="role-btn active" id="btnRoleKid" onclick="setRole('kid')">🧒 Ученик</button>
+            <button class="role-btn" id="btnRoleParent" onclick="setRole('parent')">👨‍👩‍👧 Родитель</button>
+        </div>
+        <select class="tier-select" id="tierSelector" onchange="changeTier(this.value)">
+            <option value="vip">👑 Семья VIP (0₽)</option>
+            <option value="pro">⭐ PRO (199₽/мес)</option>
+            <option value="free">🆓 Бесплатный</option>
+        </select>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="holiday-banner" id="seasonBanner"></div>
+
+    <div class="bday-card" id="bdayBanner">
+        <div class="bday-title" id="bdayTitle">🎂 С Днём Рождения! 🎉</div>
+        <div style="font-size: 0.92rem; margin-bottom: 10px;">
+            Весь <span id="bdayGradeText">2</span> класс и Робот-Умник поздравляют тебя! Тебе начислено <b>+50 звёзд</b>!
+        </div>
+        <button class="btn btn-primary" style="padding: 10px; font-size: 0.9rem;" onclick="fireConfetti()">🎆 Запустить салют!</button>
+    </div>
+
+    <div id="kid-views">
+        <div id="kid-tab-ai" class="view-section active">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🤖 Робот-Объяснялкин</h3>
+                    <span class="tag-free">БЕСПЛАТНО</span>
+                </div>
+                <p style="margin:0; color:var(--muted); font-size:0.9rem;">Задай любой вопрос по урокам — помогу разобраться!</p>
+                <textarea id="kidAiInput" rows="2" placeholder="Например: Как проверить безударную гласную в слове «л_сной»?"></textarea>
+                <button class="btn btn-primary" onclick="askRealAI('kid_help', 'kidAiInput', 'kidAiOutput')">✨ Спросить Робота</button>
+                <div id="kidAiOutput" class="ai-box"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📖 Генератор сказок и Квестов</h3>
+                    <span class="tag-pro">PRO / VIP</span>
+                </div>
+                <div id="kidProContent">
+                    <p style="margin:0 0 8px; color:var(--muted); font-size:0.9rem;">Напиши тему (космос, динозавры, школа), и ИИ сочинит сказку про тебя!</p>
+                    <input type="text" id="taleTopicInput" placeholder="Тема сказки (например: полёт на Марс)">
+                    <button class="btn btn-gold" onclick="askRealAI('kid_tale', 'taleTopicInput', 'kidProOutput')">✨ Сочинить сказку (+5 ⭐)</button>
+                    <div id="kidProOutput" class="ai-box"></div>
+                </div>
+                <div id="kidProLock" class="pro-lock-overlay" style="display:none;">
+                    <b>🔒 Доступно в тарифе PRO (199 ₽/мес.)</b>
+                    <p style="font-size:0.85rem; color:var(--muted); margin:6px 0 12px;">Персональные сказки от ИИ, безлимитный репетитор и супер-награды.</p>
+                    <button class="btn btn-gold" onclick="openSubModal()">Открыть PRO за 199 ₽</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="kid-tab-games" class="view-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🎧 Голосовой диктант</h3>
+                    <span class="tag-free">БЕСПЛАТНО</span>
+                </div>
+Нажми кнопку, послушай слово и впиши его без ошибок:
+🔊 Послушать слово
+
+Проверить (+3 ⭐)
+
+
+🎂 Профиль и Праздники
+БЕСПЛАТНО
+Имя ученика:
+Дата рождения (автопоздравление в этот день):
+💾 Сохранить профиль
+
+
+Автоперевод 1 сентября:Взросление программы
++1 класс 🎓
+
+
+
+🎒 Сбор портфеля на завтра
+БЕСПЛАТНО
+ Учебник и тетрадь по Математике
+ Словарь и пенал (Русский язык)
+ Спортивная форма (Физ-ра!)
+ Сменка и бутылка воды
+🧣 Потеряшки и Объявления
+БЕСПЛАТНО
+
+📢 Важно: В пятницу сдаём согласие на экскурсию.
+🧤 Потеряшка: В раздевалке осталась синяя шапка с помпоном.
+
+🧠 ИИ «Объясни как в школе»
+PRO / VIP
+
+
+Впишите задачу — ИИ покажет краткую запись и решение строго по программе 2 класса:
+
+✨ Показать решение по ФГОС
+
+
+
+🔒 Функция тарифа PRO (199 ₽/мес.)
+ИИ-решебник по школьной методике и помощь с проектами.
+Подключить PRO за 199 ₽
+
+⏱ Замер техники чтения
+БЕСПЛАТНО
+
+01:00
+▶ Запустить 60 секунд
+
+📅 Расписание уроков
+БЕСПЛАТНО
+
+
+1. (08:30 – 09:15): Математика
+2. (09:25 – 10:10): Русский язык
+3. (10:25 – 11:10): Лит. чтение
+4. (11:20 – 12:05): Окружающий мир
+5. (12:15 – 13:00): Физкультура
+
+
+
+
+🤖ИИ-Друг
+🎮Игры
+🎂Профиль
+🎒Портфель
+🧠ИИ и Чтение
+📅Уроки
+🚀
+Тариф «Супер-Класс PRO»
+Символическая поддержка проекта — 199 ₽/мес.
+💳 Оплатить 199 ₽
+Закрыть
+
+let currentGrade = Number(localStorage.getItem('grade') || 2);
+let stars = Number(localStorage.getItem('stars') || 45);
+let studentName = localStorage.getItem('studentName') || 'Алиса';
+document.getElementById('gradeBadge').innerText = currentGrade + ' Класс';
+document.getElementById('starCounter').innerText = stars;
+document.getElementById('studentNameInput').value = studentName;
+const todayObj = new Date();
+const yyyy = todayObj.getFullYear();
+const mmNow = String(todayObj.getMonth() + 1).padStart(2, '0');
+const ddNow = String(todayObj.getDate()).padStart(2, '0');
+const todayISO = ${yyyy}-${mmNow}-${ddNow};
+const savedBday = localStorage.getItem('studentBday') || todayISO;
+document.getElementById('studentBdayInput').value = savedBday;
+function fireConfetti() {
+if (typeof confetti === 'function') {
+confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+}
+}
+function checkAllHolidays() {
+const now = new Date();
+const mm = now.getMonth() + 1;
+const dd = now.getDate();
+const bdayVal = document.getElementById('studentBdayInput').value;
+if (bdayVal) {
+const parts = bdayVal.split('-');
+const bMonth = Number(parts.at(1));
+const bDay = Number(parts.at(2));
+if (bMonth === mm && bDay === dd) {
+document.getElementById('bdayTitle').innerText = 🎂 С Днём Рождения, ${studentName}! 🎉;
+document.getElementById('bdayGradeText').innerText = currentGrade;
+document.getElementById('bdayBanner').style.display = 'block';
+setTimeout(fireConfetti, 500);
+} else {
+document.getElementById('bdayBanner').style.display = 'none';
+}
+}
+const sb = document.getElementById('seasonBanner');
+if ((mm === 12 && dd >= 15) || (mm === 1 && dd <= 15)) {
+sb.style.display = 'block';
+sb.innerText = '❄️ С Наступающим Новым Годом! Новогодний режим активирован! 🎄';
+}
+}
+checkAllHolidays();
+async function askRealAI(mode, inputId, outputId) {
+const prompt = document.getElementById(inputId).value.trim();
+const out = document.getElementById(outputId);
+if (!prompt) return alert('Сначала напиши вопрос или тему!');
+out.style.display = 'block';
+out.innerHTML = '⏳ Нейросеть думает...';
+try {
+const res = await fetch('/api/chat', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ prompt, mode, grade: currentGrade, studentName })
+});
+const data = await res.json();
+out.innerText = data.reply;
+if (mode === 'kid_tale') addStars(5);
+} catch (err) {
+out.innerText = 'Ошибка связи с сервером. Проверь настройку GROQ_API_KEY в Vercel!';
+}
+}
+function setRole(role) {
+document.getElementById('btnRoleKid').classList.toggle('active', role === 'kid');
+document.getElementById('btnRoleParent').classList.toggle('active', role === 'parent');
+document.getElementById('kid-views').style.display = role === 'kid' ? 'block' : 'none';
+document.getElementById('kid-nav').style.display = role === 'kid' ? 'flex' : 'none';
+document.getElementById('parent-views').style.display = role === 'parent' ? 'block' : 'none';
+document.getElementById('parent-nav').style.display = role === 'parent' ? 'flex' : 'none';
+}
+function changeTier(tier) {
+const ok = (tier === 'vip' || tier === 'pro');
+document.getElementById('kidProContent').style.display = ok ? 'block' : 'none';
+document.getElementById('kidProLock').style.display = ok ? 'none' : 'block';
+document.getElementById('parentProContent').style.display = ok ? 'block' : 'none';
+document.getElementById('parentProLock').style.display = ok ? 'none' : 'block';
+}
+function switchKidTab(t, b) {
+document.querySelectorAll('#kid-views .view-section').forEach(e => e.classList.remove('active'));
+document.querySelectorAll('#kid-nav .nav-tab').forEach(e => e.classList.remove('active'));
+document.getElementById('kid-tab-' + t).classList.add('active');
+b.classList.add('active');
+}
+function switchParentTab(t, b) {
+document.querySelectorAll('#parent-views .view-section').forEach(e => e.classList.remove('active'));
+document.querySelectorAll('#parent-nav .nav-tab').forEach(e => e.classList.remove('active'));
+document.getElementById('parent-tab-' + t).classList.add('active');
+b.classList.add('active');
+}
+function addStars(n) {
+stars += n;
+localStorage.setItem('stars', stars);
+document.getElementById('starCounter').innerText = stars;
+}
+function promoteGrade() {
+currentGrade = currentGrade < 11 ? currentGrade + 1 : 1;
+localStorage.setItem('grade', currentGrade);
+document.getElementById('gradeBadge').innerText = currentGrade + ' Класс';
+document.getElementById('bdayGradeText').innerText = currentGrade;
+document.querySelectorAll('.dyn-grade').forEach(e => e.innerText = currentGrade);
+fireConfetti();
+}
+const words = ['воробей', 'тетрадь', 'карандаш', 'девочка', 'собака', 'учитель', 'медведь'];
+let curWord = words.at(0);
+function speakDictWord() {
+curWord = words.at(Math.floor(Math.random() * words.length));
+const u = new SpeechSynthesisUtterance(curWord);
+u.lang = 'ru-RU';
+u.rate = 0.85;
+speechSynthesis.speak(u);
+}
+function checkDictWord() {
+const val = document.getElementById('dictWordInput').value.trim().toLowerCase();
+const fb = document.getElementById('dictFeedback');
+if (val === curWord) {
+fb.style.color = 'green';
+fb.innerText = '🎉 Верно! +3 звезды!';
+addStars(3);
+document.getElementById('dictWordInput').value = '';
+} else {
+fb.style.color = 'red';
+fb.innerText = 'Попробуй ещё раз! Нажми «Послушать слово».';
+}
+}
+function rewardParentCheck(cb) { if (cb.checked) addStars(1); }
+let timerInt;
+function startReadTimer() {
+clearInterval(timerInt);
+let sec = 60;
+timerInt = setInterval(() => {
+sec--;
+document.getElementById('readTimer').innerText = 00:${sec < 10 ? '0' + sec : sec};
+if (sec <= 0) {
+clearInterval(timerInt);
+alert('⏰ Время вышло! Посчитайте слова.');
+}
+}, 1000);
+}
+function saveProfile() {
+studentName = document.getElementById('studentNameInput').value.trim() || 'Ученик';
+const bday = document.getElementById('studentBdayInput').value;
+localStorage.setItem('studentName', studentName);
+localStorage.setItem('studentBday', bday);
+checkAllHolidays();
+alert('✅ Профиль сохранён!');
+}
+function openSubModal() { document.getElementById('subModal').style.display = 'flex'; }
+function closeSubModal() { document.getElementById('subModal').style.display = 'none'; }
+function activateDemoPro() {
+document.getElementById('tierSelector').value = 'pro';
+changeTier('pro');
+closeSubModal();
+fireConfetti();
+}
+
